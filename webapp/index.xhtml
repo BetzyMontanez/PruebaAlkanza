@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h2>Prueba Alkanza</h2>
+<h2>
+	<p:outputLabel value="Prueba práctica"></p:outputLabel>
+</h2>
+<h2>
+	<label>Radio(m) </label> 
+	<input id="radio" type="number" name="quantity" min="1" max="5" value="1000" /> 
+	<br />
+	<input onclick="buscar();" type="button" value="Buscar" />
+	<input onclick="calcular();" type="button" value="Calcular" />
+</h2>
+
+<head>
+<style>
+#map {
+	height: 100%;
+}
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script>
+		var map;
+		var markers = [];
+		var infowindow;
+
+		function initMap() {
+			map = new google.maps.Map(document.getElementById('map'), {
+				center : {
+					lat : -34.397,
+					lng : 150.644
+				},
+				zoom : 15
+			});
+			
+			infowindow = new google.maps.InfoWindow();
+			
+			navigator.geolocation.getCurrentPosition(function(position) {
+				var pos = {
+					lat : position.coords.latitude,
+					lng : position.coords.longitude
+				};
+
+				map.setCenter(pos);
+				var marker = new google.maps.Marker({
+					position : pos,
+					map : map
+				});
+				markers.push(marker);
+
+			}, function() {
+				handleLocationError(true, infoWindow, map.getCenter());
+			});
+
+			map.addListener('click', function(event) {
+				addMarker(event.latLng);
+			});
+
+		}
+
+		function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+			infoWindow.setPosition(pos);
+			infoWindow
+					.setContent(browserHasGeolocation ? 'Error: The Geolocation service failed.'
+							: 'Error: Your browser doesn\'t support geolocation.');
+			infoWindow.open(map);
+		}
+
+		function addMarker(location) {
+			deleteMarkers();
+			var marker = new google.maps.Marker({
+				position : location,
+				map : map
+			});
+			markers.push(marker);
+		}
+
+		function deleteMarkers() {
+			for (var i = 0; i &lt; markers.length; i++) {
+		          markers[i].setMap(null);
+		        }
+			markers = [];
+		}
+
+		function buscar() {
+			var rad = document.getElementById('radio').value
+
+			var service = new google.maps.places.PlacesService(map);
+			service.nearbySearch({
+				location : markers[0].getPosition(),
+				radius : rad,
+				type : [ 'doctor' ]
+			}, callback);
+		}
+
+		function callback(results, status) {
+			if (status === google.maps.places.PlacesServiceStatus.OK) {
+				for (var i = 0; i &lt; results.length; i++) {
+		            createMarker(results[i]);
+		          }
+			}
+		}
+
+		function createMarker(place) {
+			var placeLoc = place.geometry.location;
+			//window.alert(placeLoc);
+			var marker = new google.maps.Marker({
+				position : placeLoc,
+				map : map
+			});
+			
+			google.maps.event.addListener(marker, 'click', function() {
+				infowindow.setContent(place.name);
+				infowindow.open(map, this);
+			});
+			
+			markers.push(marker);
+		}
+		
+		function calcular(){
+			
+		}
+	</script>
+	<script
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSg4ovfra98noxrwztvxD4w0Qrv4sWBrM&amp;libraries=places&amp;callback=initMap"></script>
+</body>
+</html>
